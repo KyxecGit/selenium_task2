@@ -1,0 +1,8 @@
+{
+    "timeouts": {
+        "implicit_wait": 10,
+        "explicit_wait": 10
+    },
+    "english_version": "https://store.steampowered.com/?l=english",
+    "russian_version": "https://store.steampowered.com/?l=russian"
+}
