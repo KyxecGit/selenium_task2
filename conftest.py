@@ -1,34 +1,24 @@
 import pytest
-from utils.config_reader import ConfigReader
 from utils.browser import Browser
+from utils.config_reader import ConfigReader
 
-config = ConfigReader('data/config.json')
-data = ConfigReader('data/test_data.json')
+# Получаем URL и языки из конфигурации
+url = ConfigReader('url')
+languages = ConfigReader("languages")
 
-@pytest.fixture(params=['english', 'russian'])
-def language(request):
+@pytest.fixture(params=languages)
+def browser(request):
     """
-    Фикстура для получения версии сайта на нужном языке.
-    Параметризовано для двух языков: английский и русский.
-    """
-    yield config.get(f'{request.param}_version')
+    Фикстура Pytest для создания экземпляра WebDriver.
 
-@pytest.fixture
-def setup_browser(language):
-    """
-    Фикстура для инициализации и закрытия браузера.
-    Обнуляет Singleton браузера и открывает сайт на нужном языке.
-    """
-    Browser._instance = None
-    driver = Browser.get_driver()
-    driver.get(language)
-    yield driver
-    driver.quit()
+    Параметры:
+        request (FixtureRequest): Объект запроса фикстуры, используется для получения текущего языка.
 
-def pytest_generate_tests(metafunc):
+    Возвращает:
+        WebDriver: Экземпляр WebDriver для заданного языка.
     """
-    Автоматическая параметризация тестов на основе данных из test_data.json.
-    """
-    if 'game_name' in metafunc.fixturenames and 'min_count' in metafunc.fixturenames:
-        test_data = data.load_data()
-        metafunc.parametrize("game_name, min_count", test_data)
+    language = request.param  # Получаем язык из параметров фикстуры
+    driver = Browser.get_driver(language)  # Получаем WebDriver с заданным языком
+    driver.get(url)  # Открываем URL
+    yield driver  # Передаем WebDriver в тест
+    Browser.quit_driver()  # Закрываем WebDriver после завершения теста

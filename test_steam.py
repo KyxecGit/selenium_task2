@@ -1,24 +1,30 @@
-import logging
+import pytest
 from pages.home_page import HomePage
 from pages.result_page import ResultPage
+from utils.config_reader import ConfigReader
 
-logging.basicConfig(level=logging.INFO)
+# Загружаем тестовые данные из конфигурационного файла
+test_data = ConfigReader('test_data')
 
-def test_game_search(setup_browser, language, game_name, min_count):
+@pytest.mark.parametrize("game, min_count", test_data)
+def test_game_search(browser, game, min_count):
     """
-    Тест на поиск игры и проверку количества результатов после применения фильтра.
+    Проверяет функциональность поиска игр и фильтрации по цене.
+
+    Параметры:
+        browser (WebDriver): Экземпляр WebDriver, предоставленный фикстурой.
+        game (str): Название игры для поиска.
+        min_count (int): Минимальное количество игр, которое должно быть найдено после фильтрации.
+
+    Проверяет:
+        Количество игр после применения фильтра по цене больше минимального количества.
     """
-    home_page = HomePage()
-    result_page = ResultPage()
+    home_page = HomePage()  # Создаем объект страницы поиска
+    result_page = ResultPage()  # Создаем объект страницы результатов
 
-    logging.info(f"Поиск игры: {game_name}")
-    home_page.search_game(game_name)
+    home_page.search_game(game)  # Ищем игру
+    result_page.price_filter()  # Применяем фильтр по цене
 
-    logging.info("Применение фильтра по цене")
-    result_page.price_filter()
+    game_count = result_page.game_count()  # Получаем количество найденных игр
 
-    logging.info("Подсчет количества игр")
-    game_count = result_page.game_count()
-
-    logging.info(f"Количество игр: {game_count}, Минимум ожидалось: {min_count}")
-    assert game_count > min_count, f"Ожидалось минимум {min_count} игр, но найдено только {game_count}."
+    assert game_count > min_count  # Проверяем, что найденное количество игр больше минимального

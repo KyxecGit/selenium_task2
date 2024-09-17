@@ -1,21 +1,35 @@
 import json
 
 class ConfigReader:
-    def __init__(self, config_file):
-        """
-        Загружает конфигурацию из JSON-файла.
-        """
-        with open(config_file) as f:
-            self.config = json.load(f)
+    """
+    Класс для чтения значений из конфигурационного файла.
+    """
 
-    def get(self, key):
+    def __new__(cls, key):
         """
-        Получает значение из конфигурации по ключу.
-        """
-        return self.config.get(key)
+        Создает новый экземпляр класса и возвращает значение по ключу из конфигурационного файла.
 
-    def load_data(self):
+        Аргументы:
+            key (str): Ключ для поиска значения в конфигурационном файле.
+
+        Возвращает:
+            Значение, соответствующее ключу из конфигурационного файла.
         """
-        Возвращает полное содержимое конфигурации.
+        instance = super(ConfigReader, cls).__new__(cls)
+        instance.key = key
+        instance.value = instance.load_config(key)  # Загружаем значение по ключу
+        return instance.value
+
+    def load_config(self, key):
         """
-        return self.config
+        Загружает значение из конфигурационного файла по заданному ключу.
+
+        Аргументы:
+            key (str): Ключ для поиска значения.
+
+        Возвращает:
+            Значение из конфигурационного файла.
+        """
+        with open("data/config.json") as file:
+            config = json.load(file)  # Загружаем конфигурацию из файла
+        return config.get(key)  # Возвращаем значение по ключу
