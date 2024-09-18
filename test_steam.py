@@ -1,30 +1,27 @@
+import json
 import pytest
 from pages.home_page import HomePage
 from pages.result_page import ResultPage
-from utils.config_reader import ConfigReader
 
-# Загружаем тестовые данные из конфигурационного файла
-test_data = ConfigReader('test_data')
+
+with open("data/test_data.json") as file:
+    data = json.load(file)
+    test_data = data['test_data']
+
 
 @pytest.mark.parametrize("game, min_count", test_data)
-def test_game_search(browser, game, min_count):
-    """
-    Проверяет функциональность поиска игр и фильтрации по цене.
+def test_game_price_and_count_after_filter(browser, game, min_count):
+    home_page = HomePage()
+    result_page = ResultPage()
 
-    Параметры:
-        browser (WebDriver): Экземпляр WebDriver, предоставленный фикстурой.
-        game (str): Название игры для поиска.
-        min_count (int): Минимальное количество игр, которое должно быть найдено после фильтрации.
+    home_page.search_game(game)
+    assert result_page.is_page_loaded(), "Страница результатов не загрузилась"
 
-    Проверяет:
-        Количество игр после применения фильтра по цене больше минимального количества.
-    """
-    home_page = HomePage()  # Создаем объект страницы поиска
-    result_page = ResultPage()  # Создаем объект страницы результатов
+    price_before_filter = result_page.get_first_game_price()
+    result_page.price_filter()
+    result_page.wait_for_price_change(price_before_filter)
+    price_after_filter = result_page.get_first_game_price()
+    assert price_before_filter != price_after_filter, "Цена первой игры не изменилась после применения фильтра"
 
-    home_page.search_game(game)  # Ищем игру
-    result_page.price_filter()  # Применяем фильтр по цене
-
-    game_count = result_page.game_count()  # Получаем количество найденных игр
-
-    assert game_count > min_count  # Проверяем, что найденное количество игр больше минимального
+    game_count = result_page.game_count()
+    assert game_count > min_count, f"Ожидалось больше {min_count} игр, но найдено {game_count} для '{game}'"
