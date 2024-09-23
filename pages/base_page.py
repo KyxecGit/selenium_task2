@@ -13,3 +13,4 @@ class BasePage:
 
     def is_page_loaded(self):
         return self.driver.execute_script("return document.readyState") == "complete"
+        
